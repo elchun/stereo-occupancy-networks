@@ -33,7 +33,7 @@ class MeshIntersector:
         points = self.rescale(points)
 
         # placeholder result with no hits we'll fill in later
-        contains = np.zeros(len(points), dtype=np.bool)
+        contains = np.zeros(len(points), dtype=bool)
 
         # cull points outside of the axis aligned bounding box
         # this avoids running ray tests unless points are close
@@ -63,7 +63,7 @@ class MeshIntersector:
 
         nintersect0 = np.bincount(points_indices_0, minlength=points.shape[0])
         nintersect1 = np.bincount(points_indices_1, minlength=points.shape[0])
-        
+
         # Check if point contained in mesh
         contains1 = (np.mod(nintersect0, 2) == 1)
         contains2 = (np.mod(nintersect1, 2) == 1)
@@ -91,7 +91,7 @@ class MeshIntersector:
         abs_n_2 = np.abs(n_2)
 
         mask = (abs_n_2 != 0)
-    
+
         depth_intersect = np.full(points.shape[0], np.nan)
         depth_intersect[mask] = \
             t1_2[mask] * abs_n_2[mask] + alpha[mask] * s_n_2[mask]
@@ -127,13 +127,13 @@ class TriangleIntersector2d:
         return point_indices, tri_indices
 
     def check_triangles(self, points, triangles):
-        contains = np.zeros(points.shape[0], dtype=np.bool)
+        contains = np.zeros(points.shape[0], dtype=bool)
         A = triangles[:, :2] - triangles[:, 2:]
         A = A.transpose([0, 2, 1])
         y = points - triangles[:, 2]
 
         detA = A[:, 0, 0] * A[:, 1, 1] - A[:, 0, 1] * A[:, 1, 0]
-        
+
         mask = (np.abs(detA) != 0.)
         A = A[mask]
         y = y[mask]
