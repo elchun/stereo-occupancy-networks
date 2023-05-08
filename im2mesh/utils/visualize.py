@@ -39,7 +39,7 @@ def visualize_voxels(voxels, out_file=None, show=False):
     voxels = np.asarray(voxels)
     # Create plot
     fig = plt.figure()
-    ax = fig.gca(projection=Axes3D.name)
+    ax = fig.add_subplot(projection=Axes3D.name)
     voxels = voxels.transpose(2, 0, 1)
     ax.voxels(voxels, edgecolor='k')
     ax.set_xlabel('Z')
@@ -67,7 +67,7 @@ def visualize_pointcloud(points, normals=None,
     points = np.asarray(points)
     # Create plot
     fig = plt.figure()
-    ax = fig.gca(projection=Axes3D.name)
+    ax = fig.add_subplot(projection=Axes3D.name)
     ax.scatter(points[:, 2], points[:, 0], points[:, 1])
     if normals is not None:
         ax.quiver(
