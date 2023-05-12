@@ -189,4 +189,5 @@ def render_batch(data_path: str, shapenet_ids: List[str], save_dir: str, n_sampl
             )
 
 # -- RENDER EVERYTHING -- #
-render_batch(mug_data_path, mug_shapenet_ids, mug_stereo_path, n_samples_per_ob=1000)
+# render_batch(mug_data_path, mug_shapenet_ids, mug_stereo_path, n_samples_per_ob=1000)
+render_batch(bowl_data_path, bowl_shapenet_ids, bowl_stereo_path, n_samples_per_ob=1000)
