@@ -15,6 +15,11 @@ from im2mesh.data.real import (
     ImageDataset,
 )
 
+# -- Added for stereo occ -- #
+from im2mesh.data.stereo_shapenet_data import (
+    Shapes3dMonoDataset,
+)
+
 
 __all__ = [
     # Core
@@ -37,4 +42,5 @@ __all__ = [
     KittiDataset,
     OnlineProductDataset,
     ImageDataset,
+    Shapes3dMonoDataset,
 ]

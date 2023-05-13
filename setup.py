@@ -1,5 +1,5 @@
 try:
-    from setuptools import setup
+    from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup
 from distutils.extension import Extension
@@ -80,11 +80,11 @@ dmc_pred2mesh_module = CppExtension(
     'im2mesh.dmc.ops.cpp_modules.pred2mesh',
     sources=[
         'im2mesh/dmc/ops/cpp_modules/pred_to_mesh_.cpp',
-    ]   
+    ]
 )
 
 dmc_cuda_module = CUDAExtension(
-    'im2mesh.dmc.ops._cuda_ext', 
+    'im2mesh.dmc.ops._cuda_ext',
     sources=[
         'im2mesh/dmc/ops/src/extension.cpp',
         'im2mesh/dmc/ops/src/curvature_constraint_kernel.cu',
@@ -107,9 +107,17 @@ ext_modules = [
     dmc_cuda_module,
 ]
 
+packages = find_packages()
+for p in packages:
+    assert p.startswith('im2mesh')
+
 setup(
+    name='im2mesh',
+    author='multiple',
+    license='MIT',
+    packages=packages,
     ext_modules=cythonize(ext_modules),
+    package_data={},
     cmdclass={
         'build_ext': BuildExtension
-    }
-)
+    })
