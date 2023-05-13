@@ -1,3 +1,4 @@
+# Based on the not headless version.  Good for large batches.
 import os
 import os.path as osp
 
