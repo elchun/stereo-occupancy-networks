@@ -23,7 +23,7 @@ class Shapes3dMonoDataset(data.Dataset):
     """
     Shapenet mugs, bowl, bottles
     """
-    def __init__(self, dataset_folder: str, split: str, categories: list):
+    def __init__(self, dataset_folder: str, split: str, categories: list, points_subsample: int):
         """
         Init function for Shapes3dMonoDataset
 
@@ -33,6 +33,9 @@ class Shapes3dMonoDataset(data.Dataset):
             categories (list): list of categories to use ('mug', 'bowl', 'bottle')
         """
         self.dataset_folder = dataset_folder
+        self.points_subsample = points_subsample
+        if categories is None:
+            categories = ['mug', 'bowl', 'bottle']
 
         # -- Get model list -- #
         self.models = []
@@ -89,8 +92,9 @@ class Shapes3dMonoDataset(data.Dataset):
         # Occupancy is stored as an array of coordinates and array of bool
         # occupancy values
         occupancies = np.load(osp.join(self.dataset_folder, shapenet_category, shapenet_id, 'occ.npz'))
-        coord = occupancies['coord']
-        voxel_bool = occupancies['voxel_bool']
+        randidx = np.random.randint(0, occupancies['coord'].shape[0], self.points_subsample)
+        coord = occupancies['coord'][randidx, :]
+        voxel_bool = occupancies['voxel_bool'][randidx]
 
         # -- Load images -- #
         images = np.load(osp.join(self.dataset_folder, shapenet_category, shapenet_id, f'pose_{sample_idx}.npz'))

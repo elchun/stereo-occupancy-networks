@@ -151,6 +151,15 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
             split=split,
             categories=categories,
         )
+    # New
+    elif dataset_type == 'Shapes3dMono':
+        points_subsample = cfg['data']['points_subsample']
+        dataset = data.Shapes3dMonoDataset(
+            dataset_folder,
+            split,
+            categories,
+            points_subsample,
+        )
     elif dataset_type == 'kitti':
         dataset = data.KittiDataset(
             dataset_folder, img_size=cfg['data']['img_size'],

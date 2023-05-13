@@ -61,7 +61,6 @@ val_loader = torch.utils.data.DataLoader(
     collate_fn=data.collate_remove_none,
     worker_init_fn=data.worker_init_fn)
 
-
 # For visualizations
 vis_loader = torch.utils.data.DataLoader(
     val_dataset, batch_size=12, shuffle=True,
