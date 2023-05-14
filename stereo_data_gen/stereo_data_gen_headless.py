@@ -1,3 +1,4 @@
+# Based on the not headless version.  Good for large batches.
 import os
 import os.path as osp
 
@@ -25,7 +26,7 @@ objects_to_dir = {
     'bottle': 'bottle_centered_obj'
 }
 mug_data_path = osp.join(data_dir, 'objects', objects_to_dir['mug'])
-bowl_data_path = osp.join(data_dir, 'objects', objects_to_dir['bottle'])
+bowl_data_path = osp.join(data_dir, 'objects', objects_to_dir['bowl'])
 bottle_data_path = osp.join(data_dir, 'objects', objects_to_dir['bottle'])
 
 mug_shapenet_ids = os.listdir(mug_data_path)
@@ -179,15 +180,24 @@ def render_batch(data_path: str, shapenet_ids: List[str], save_dir: str, n_sampl
         for i, data in enumerate(zip(l_images, r_images, poses)):
             l_image, r_image, pose = data
 
+            l_image = np.einsum('ijk->kij', l_image)
+            r_image = np.einsum('ijk->kij', r_image)
+
+            # -- Make same datatype -- #
+            l_image = l_image.astype(np.float32)
+            r_image = r_image.astype(np.float32)
+            pose = pose.astype(np.float32)
+
             save_fname = osp.join(id_save_dir, 'pose_' + str(i))
             # You must load the occupany with the dataloader
             np.savez(save_fname,
                 l_image = l_image,
                 r_image = r_image,
                 pose = pose,
-                shapenet_id = shapenet_id,
+                # shapenet_id = shapenet_id,
             )
 
 # -- RENDER EVERYTHING -- #
 # render_batch(mug_data_path, mug_shapenet_ids, mug_stereo_path, n_samples_per_ob=1000)
 render_batch(bowl_data_path, bowl_shapenet_ids, bowl_stereo_path, n_samples_per_ob=1000)
+render_batch(bottle_data_path, bottle_shapenet_ids, bottle_stereo_path, n_samples_per_ob=1000)
