@@ -4,6 +4,7 @@ data:
   path: data/stereo_training_data
   img_size: 224
   points_subsample: 2048 # TODO
+  classes: [bowl]
 model:
   encoder_latent: null
   decoder: cbatchnorm
@@ -11,7 +12,7 @@ model:
   c_dim: 256
   z_dim: 0
 training:
-  out_dir:  out/img/onet
+  out_dir:  out/img/onet_mono
   batch_size: 64
   model_selection_metric: iou
   model_selection_mode: maximize

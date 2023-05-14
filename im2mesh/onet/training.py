@@ -154,9 +154,13 @@ class Trainer(BaseTrainer):
         occ = data.get('points.occ').to(device)
         inputs = data.get('inputs', torch.empty(p.size(0), 0)).to(device)
 
+        #TODO: REMOVE
+        # print('Dtype: ', inputs.dtype)
+
         kwargs = {}
 
         c = self.model.encode_inputs(inputs)
+        # print('Encoded inputs!')
         q_z = self.model.infer_z(p, occ, c, **kwargs)
         z = q_z.rsample()
 

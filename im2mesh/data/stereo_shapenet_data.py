@@ -34,6 +34,7 @@ class Shapes3dMonoDataset(data.Dataset):
         """
         self.dataset_folder = dataset_folder
         self.points_subsample = points_subsample
+        self.split = split
         if categories is None:
             categories = ['mug', 'bowl', 'bottle']
 
@@ -57,7 +58,7 @@ class Shapes3dMonoDataset(data.Dataset):
         # Note: We render a set of stereo views for each model.  The total
         # number of datapoints is the number of models times the number of
         # samples per model.
-        self.samples_per_model = len(os.listdir(osp.join(dataset_folder, categories[0], self.models[0])))
+        self.samples_per_model = len([sample for sample in os.listdir(osp.join(dataset_folder, categories[0], self.models[0])) if 'pose' in sample])
 
 
     def __len__(self):
@@ -88,28 +89,54 @@ class Shapes3dMonoDataset(data.Dataset):
                 shapenet_category = category
                 break
 
-        # -- Load Occupancy -- #
+        # -- Load normal points -- #
         # Occupancy is stored as an array of coordinates and array of bool
         # occupancy values
         occupancies = np.load(osp.join(self.dataset_folder, shapenet_category, shapenet_id, 'occ.npz'))
         randidx = np.random.randint(0, occupancies['coord'].shape[0], self.points_subsample)
         coord = occupancies['coord'][randidx, :]
-        voxel_bool = occupancies['voxel_bool'][randidx]
+        occ_logits = occupancies['voxel_bool'][randidx]
+
+        # -- Load IOU Points -- #
+        # points_iou = None
+        # occ_iou = None
+        # if self.split == 'val':
+        iou_randidx = np.random.randint(0, occupancies['coord'].shape[0], self.points_subsample)
+        points_iou = occupancies['coord'][iou_randidx, :]
+        occ_iou = occupancies['voxel_bool'][iou_randidx]
 
         # -- Load images -- #
         images = np.load(osp.join(self.dataset_folder, shapenet_category, shapenet_id, f'pose_{sample_idx}.npz'))
         l_image = images['l_image']
         r_image = images['r_image']
+
+        # TODO: Remove once reshaping is done
+        if l_image.shape[0] != 3:
+            l_image = np.einsum('ijk->kij', l_image)
+        if r_image.shape[0] != 3:
+            r_image = np.einsum('ijk->kij', r_image)
+
+        # TODO: Remove once reprocessing is done
+        l_image = l_image.astype(np.float32)
+        r_image = r_image.astype(np.float32)
+        coord = coord.astype(np.float32)
+        occ_logits = occ_logits.astype(np.float32)
+
         pose = images['pose']
+        pose = pose.astype(np.float32)
 
         # Assume pose is a 4x4 homogeneous transform matrix
         coord_transformed = coord @ pose[:3, :3].T + pose[:3, 3]
-        voxel_bool
+
+        # print('coord_dtype: ', coord_transformed.dtype)
+        # print('voxel shape: ', occ_logits.shape)
 
         data = {
             'points': coord_transformed,
-            'points.occ': voxel_bool,
-            'inputs': l_image
+            'points.occ': occ_logits,
+            'inputs': l_image,
+            'points_iou': points_iou,
+            'points_iou.occ': occ_iou,
         }
 
         return data
