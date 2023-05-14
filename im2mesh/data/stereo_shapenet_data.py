@@ -106,9 +106,17 @@ class Shapes3dMonoDataset(data.Dataset):
         occ_iou = occupancies['voxel_bool'][iou_randidx]
 
         # -- Load images -- #
-        images = np.load(osp.join(self.dataset_folder, shapenet_category, shapenet_id, f'pose_{sample_idx}.npz'))
-        l_image = images['l_image']
-        r_image = images['r_image']
+        try:
+            images = np.load(osp.join(self.dataset_folder, shapenet_category, shapenet_id, f'pose_{sample_idx}.npz'))
+            l_image = images['l_image']
+            r_image = images['r_image']
+            pose = images['pose']
+        except Exception:
+            error_log_path = osp.join(self.dataset_folder, shapenet_category, 'error_log.txt')
+            print(f'Error loading: {osp.join(self.dataset_folder, shapenet_category, shapenet_id, f"pose_{sample_idx}.npz")}')
+            with open(error_log_path, w) as f:
+                f.write(f'Error loading: {osp.join(shapenet_category, shapenet_id, f"pose_{sample_idx}.npz")}')
+            return self.__getitem__(idx + 1)
 
         # TODO: Remove once reshaping is done
         if l_image.shape[0] != 3:
@@ -122,7 +130,6 @@ class Shapes3dMonoDataset(data.Dataset):
         coord = coord.astype(np.float32)
         occ_logits = occ_logits.astype(np.float32)
 
-        pose = images['pose']
         pose = pose.astype(np.float32)
 
         # Assume pose is a 4x4 homogeneous transform matrix
