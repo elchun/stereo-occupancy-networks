@@ -20,7 +20,17 @@ from im2mesh.encoder.stereo_layers.transition_blocks import TransitionBlock
 
 # import utils
 
+# -- utils -- #
+def split_outputs(outputs):
+    """Split a batch of merged left and right tensors back into individual left and right tensors"""
+    batch_size, _, _, _ = outputs.shape
+    assert batch_size % 2 == 0
+    batch_size = batch_size // 2
+    left_outputs = outputs[:batch_size]
+    right_outputs = outputs[batch_size:]
+    return left_outputs, right_outputs
 
+# -- Models -- #
 class LeakyPreactBasicResidualBlock(ResidualBlock):
     """Pre-activation basic residual block."""
 
@@ -379,7 +389,7 @@ class HdrnAlphaStereo(nn.Module):
             merged_input = torch.cat([left_image, right_image], dim=0)
             merged_features_4x, merged_features_8x, merged_features_16x = self.features(merged_input)
             merged_score = self.score_features(merged_features_4x, merged_features_8x, merged_features_16x)
-            left_score, right_score = utils.split_outputs(merged_score)
+            left_score, right_score = split_outputs(merged_score)
         else:
             # At inference time for export, we want to avoid the concatenation operations so we process left and right
             # seprately.
