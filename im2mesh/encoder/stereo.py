@@ -354,6 +354,8 @@ class ProcessCostVolume(nn.Module):
         return outputs
 
 
+
+
 class HdrnAlphaStereo(nn.Module):
     """
     Main encoder module
@@ -399,12 +401,20 @@ class HdrnAlphaStereo(nn.Module):
             right_score = self.score_features(right_features_4x, right_features_8x, right_features_16x)
 
         cost_volume = self.cost_volume(left_score, right_score)
+        print('Cost volume ori: ', cost_volume.shape)
+
         cost_volume = self.process_cost_volume(cost_volume)
+        # Our cost volume is 4 x 16 x 28 x 28
+        print('Cost volume: ', cost_volume.shape)
 
         disparity_small = self.soft_argmin(cost_volume)
         matchability = self.matchability(cost_volume)
 
+        print('Disparity small: ', disparity_small.shape)
+        print('Matchability: ', matchability.shape)
+
         disparity = self.disparity_refinement(left_image, disparity_small, matchability, cost_volume)
+        print('Disparity: ', disparity.shape)
 
         output = {
             "disparity": disparity,
@@ -438,3 +448,102 @@ class HdrnAlphaStereo(nn.Module):
 def hdrn_alpha_stereo(hparams):
     """Baseline stereo model using cross-correlation cost volume"""
     return HdrnAlphaStereo(hparams)
+
+
+class CostVolumeDecoder(nn.Module):
+    """
+    Custom decoder for cost volume
+    """
+    def __init__(self, c_dim=512):
+        super().__init__()
+        # Assumes input channels is 32
+        self.conv0 = nn.Conv2d(32, 64, 3, stride=2)
+        self.conv1 = nn.Conv2d(64, 128, 3, stride=2)
+        self.conv2 = nn.Conv2d(128, 256, 3, stride=2)
+        self.fc_out = nn.Linear(256, c_dim)
+        self.actvn = nn.ReLU()
+
+    def forward(self, x):
+        batch_size = x.size(0)
+
+        net = self.conv0(x)
+        net = self.conv1(self.actvn(net))
+        net = self.conv2(self.actvn(net))
+        net = net.view(batch_size, 256, -1).mean(2)
+        out = self.fc_out(self.actvn(net))
+
+        return out
+
+class TruncatedHdrnStereoEncoder(nn.Module):
+    """
+    HdrnAlphaStereo with output of size c_dim
+    """
+
+    def __init__(self, hparams=None, c_dim=512):
+        if hparams is None:
+            class ModelConfig(object):
+                model_file: str = None
+                model_name: str = None
+
+                fe_features: int = 16
+                fe_internal_features: int = 32
+                num_disparities: int = 128
+                downsample_factor: int = 4
+
+                checkpoint: Optional[str] = None
+
+            hparams = ModelConfig()
+
+
+        super().__init__()
+        self.c_dim = c_dim
+
+        self.num_disparities = hparams.num_disparities
+        self.internal_scale = hparams.downsample_factor
+        self.internal_num_disparities = self.num_disparities // self.internal_scale
+        assert self.internal_scale in [4, 8, 16]
+
+        self.max_disparity_small = self.internal_num_disparities - 1
+        self.max_disparity = self.max_disparity_small * self.internal_scale - 1
+
+        self.features = hdrn_alpha_base(hparams.fe_internal_features)
+        self.score_features = ScoreFeatures(hparams.fe_internal_features, hparams.fe_features, self.internal_scale)
+
+        self.cost_volume = CostVolume(self.internal_num_disparities)
+        self.cost_volume_decoder = CostVolumeDecoder(c_dim)
+        self.process_cost_volume = ProcessCostVolume(hparams.fe_features, 4, self.internal_num_disparities)
+
+        # self.soft_argmin = SoftArgmin()
+        # self.matchability = Matchability()
+
+        # self.disparity_refinement = hdrn_alpha_base_refine(self.num_disparities, self.internal_scale)
+
+    # def forward(self, left_image, right_image):
+    def forward(self, x):
+        # TODO: Fix
+        left_image = x[0]
+        right_image = x[1]
+        print('l image shape: ', left_image.shape)
+        print('r image shape: ', right_image.shape)
+        batch_size, _, _, _ = left_image.shape
+
+        if self.training:
+            # Merge left and right into a single batch before passing into feature extractor at train time.
+            merged_input = torch.cat([left_image, right_image], dim=0)
+            merged_features_4x, merged_features_8x, merged_features_16x = self.features(merged_input)
+            merged_score = self.score_features(merged_features_4x, merged_features_8x, merged_features_16x)
+            left_score, right_score = split_outputs(merged_score)
+        else:
+            # At inference time for export, we want to avoid the concatenation operations so we process left and right
+            # seprately.
+            left_features_4x, left_features_8x, left_features_16x = self.features(left_image)
+            right_features_4x, right_features_8x, right_features_16x = self.features(right_image)
+            left_score = self.score_features(left_features_4x, left_features_8x, left_features_16x)
+            right_score = self.score_features(right_features_4x, right_features_8x, right_features_16x)
+
+        cost_volume = self.cost_volume(left_score, right_score)
+        # print('Cost volume ori: ', cost_volume.shape)
+
+        cost_volume = self.process_cost_volume(cost_volume)
+        embedding = self.cost_volume_decoder(cost_volume)
+        return embedding

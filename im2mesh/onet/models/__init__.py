@@ -107,6 +107,11 @@ class OccupancyNetwork(nn.Module):
             c (tensor): latent conditioned code c
         '''
 
+        # print('z: ', z.shape)  z:  torch.Size([64, 0])
+        # print('c: ', c.shape)  c:  torch.Size([2, 256])
+
+        # x.shape:  torch.Size([64, 256, 2048])
+        # c.shape:  torch.Size([2, 256])
         logits = self.decoder(p, z, c, **kwargs)
         p_r = dist.Bernoulli(logits=logits)
         return p_r

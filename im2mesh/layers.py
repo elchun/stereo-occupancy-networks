@@ -57,7 +57,7 @@ class CResnetBlockConv1d(nn.Module):
         size_out (int): output dimension
         size_h (int): hidden dimension
         norm_method (str): normalization method
-        legacy (bool): whether to use legacy blocks 
+        legacy (bool): whether to use legacy blocks
     '''
 
     def __init__(self, c_dim, size_in, size_h=None, size_out=None,

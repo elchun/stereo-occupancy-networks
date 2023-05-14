@@ -15,7 +15,7 @@ class ConvEncoder(nn.Module):
         c_dim (int): output dimension of latent embedding
     '''
 
-    def __init__(self, c_dim=128):
+    def __init__(self, c_dim=512):
         super().__init__()
         self.conv0 = nn.Conv2d(3, 32, 3, stride=2)
         self.conv1 = nn.Conv2d(32, 64, 3, stride=2)

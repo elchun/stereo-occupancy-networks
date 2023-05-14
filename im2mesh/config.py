@@ -160,6 +160,14 @@ def get_dataset(mode, cfg, return_idx=False, return_category=False):
             categories,
             points_subsample,
         )
+    elif dataset_type == 'Shapes3dStereo':
+        points_subsample = cfg['data']['points_subsample']
+        dataset = data.Shapes3dStereoDataset(
+            dataset_folder,
+            split,
+            categories,
+            points_subsample,
+        )
     elif dataset_type == 'kitti':
         dataset = data.KittiDataset(
             dataset_folder, img_size=cfg['data']['img_size'],
