@@ -1,6 +1,6 @@
 from im2mesh.encoder import (
     conv, pix2mesh_cond, pointnet,
-    psgn_cond, r2n2, voxels,
+    psgn_cond, r2n2, voxels, stereo
 )
 
 
