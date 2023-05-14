@@ -114,7 +114,7 @@ class Shapes3dMonoDataset(data.Dataset):
         except Exception:
             error_log_path = osp.join(self.dataset_folder, shapenet_category, 'error_log.txt')
             print(f'Error loading: {osp.join(self.dataset_folder, shapenet_category, shapenet_id, f"pose_{sample_idx}.npz")}')
-            with open(error_log_path, w) as f:
+            with open(error_log_path, 'w') as f:
                 f.write(f'Error loading: {osp.join(shapenet_category, shapenet_id, f"pose_{sample_idx}.npz")}')
             return self.__getitem__(idx + 1)
 
