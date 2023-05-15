@@ -127,6 +127,13 @@ class Shapes3dMonoDataset(data.Dataset):
         # TODO: Remove once reprocessing is done
         l_image = l_image.astype(np.float32)
         r_image = r_image.astype(np.float32)
+
+        # TODO: Remove
+        if np.max(l_image) > 1:
+            l_image = l_image / 255
+        if np.max(r_image) > 1:
+            r_image = r_image / 255
+
         coord = coord.astype(np.float32)
         occ_logits = occ_logits.astype(np.float32)
 
@@ -258,6 +265,13 @@ class Shapes3dStereoDataset(data.Dataset):
         # TODO: Remove once reprocessing is done
         l_image = l_image.astype(np.float32)
         r_image = r_image.astype(np.float32)
+
+        # TODO: Remove
+        if np.max(l_image) > 1:
+            l_image = l_image / 255
+        if np.max(r_image) > 1:
+            r_image = r_image / 255
+
         coord = coord.astype(np.float32)
         occ_logits = occ_logits.astype(np.float32)
 
@@ -269,16 +283,15 @@ class Shapes3dStereoDataset(data.Dataset):
         # print('coord_dtype: ', coord_transformed.dtype)
         # print('voxel shape: ', occ_logits.shape)
 
+        # Concatenate left and right images (easier to package with existing code)
+        inputs = np.concatenate([l_image, r_image], axis=0)
+
         data = {
             'points': coord_transformed,
             'points.occ': occ_logits,
-            'inputs': np.stack([l_image, r_image], axis=0),
+            'inputs': inputs,
             'points_iou': points_iou,
             'points_iou.occ': occ_iou,
         }
 
         return data
-
-
-
-

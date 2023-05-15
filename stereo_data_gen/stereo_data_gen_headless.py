@@ -184,8 +184,8 @@ def render_batch(data_path: str, shapenet_ids: List[str], save_dir: str, n_sampl
             r_image = np.einsum('ijk->kij', r_image)
 
             # -- Make same datatype -- #
-            l_image = l_image.astype(np.float32)
-            r_image = r_image.astype(np.float32)
+            l_image = l_image.astype(np.float32) / 255
+            r_image = r_image.astype(np.float32) / 255
             pose = pose.astype(np.float32)
 
             save_fname = osp.join(id_save_dir, 'pose_' + str(i))
@@ -198,6 +198,6 @@ def render_batch(data_path: str, shapenet_ids: List[str], save_dir: str, n_sampl
             )
 
 # -- RENDER EVERYTHING -- #
-# render_batch(mug_data_path, mug_shapenet_ids, mug_stereo_path, n_samples_per_ob=1000)
+render_batch(mug_data_path, mug_shapenet_ids, mug_stereo_path, n_samples_per_ob=1000)
 render_batch(bowl_data_path, bowl_shapenet_ids, bowl_stereo_path, n_samples_per_ob=1000)
 render_batch(bottle_data_path, bottle_shapenet_ids, bottle_stereo_path, n_samples_per_ob=1000)

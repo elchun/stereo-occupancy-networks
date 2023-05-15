@@ -136,6 +136,9 @@ class Trainer(BaseTrainer):
         occ_hat = p_r.probs.view(batch_size, *shape)
         voxels_out = (occ_hat >= self.threshold).cpu().numpy()
 
+        # print(inputs[0].shape)
+        # if inputs.shape[1] == 6:
+        #     inputs = inputs[:, :3, :, :]
         for i in trange(batch_size):
             input_img_path = os.path.join(self.vis_dir, '%03d_in.png' % i)
             vis.visualize_data(

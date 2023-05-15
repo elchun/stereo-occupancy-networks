@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from torchvision.utils import save_image
 import im2mesh.common as common
+import torch
 
 
 def visualize_data(data, data_type, out_file):
@@ -14,8 +15,15 @@ def visualize_data(data, data_type, out_file):
         out_file (string): output file
     '''
     if data_type == 'img':
+        # print(np.unique(data))
         if data.dim() == 3:
             data = data.unsqueeze(0)
+        if data.max() > 1:
+            data = data / 255.
+        if data.shape[1] == 6:
+            data_l = data[:, :3, :, :]
+            data_r = data[:, 3:, :, :]
+            data = torch.cat([data_l, data_r], dim=3)
         save_image(data, out_file, nrow=4)
     elif data_type == 'voxels':
         visualize_voxels(data, out_file=out_file)
