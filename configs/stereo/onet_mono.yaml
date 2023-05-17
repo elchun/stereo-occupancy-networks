@@ -16,8 +16,8 @@ training:
   batch_size: 64
   model_selection_metric: iou
   model_selection_mode: maximize
-  visualize_every: 5000
-  validate_every: 5000
+  visualize_every: 4000
+  validate_every: 4000
 test:
   threshold: 0.2
   eval_mesh: true

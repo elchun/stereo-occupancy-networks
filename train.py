@@ -8,6 +8,7 @@ import time
 import matplotlib; matplotlib.use('Agg')
 from im2mesh import config, data
 from im2mesh.checkpoints import CheckpointIO
+import tqdm
 
 
 # Arguments
@@ -118,6 +119,7 @@ while True:
     epoch_it += 1
 #     scheduler.step()
 
+    train_loader = tqdm.tqdm(train_loader)
     for batch in train_loader:
         it += 1
         loss = trainer.train_step(batch)

@@ -66,7 +66,13 @@ class Trainer(BaseTrainer):
         points = data.get('points').to(device)
         occ = data.get('points.occ').to(device)
 
-        inputs = data.get('inputs', torch.empty(points.size(0), 0)).to(device)
+        inputs = data.get('inputs', torch.empty(points.size(0), 0))
+        if type(inputs) == dict:
+            for k, v in inputs.items():
+                inputs[k] = v.to(device)
+        else:
+            inputs = inputs.to(device)
+
         voxels_occ = data.get('voxels')
 
         points_iou = data.get('points_iou').to(device)
@@ -123,7 +129,13 @@ class Trainer(BaseTrainer):
         device = self.device
 
         batch_size = data['points'].size(0)
-        inputs = data.get('inputs', torch.empty(batch_size, 0)).to(device)
+        inputs = data.get('inputs', torch.empty(batch_size, 0))
+
+        if type(inputs) == dict:
+            for k, v in inputs.items():
+                inputs[k] = v.to(device)
+        else:
+            inputs = inputs.to(device)
 
         shape = (32, 32, 32)
         p = make_3d_grid([-0.5] * 3, [0.5] * 3, shape).to(device)
@@ -139,6 +151,9 @@ class Trainer(BaseTrainer):
         # print(inputs[0].shape)
         # if inputs.shape[1] == 6:
         #     inputs = inputs[:, :3, :, :]
+        # Legacy so that it works with the old data format
+        if type(inputs) == dict:
+            inputs = torch.cat([inputs['l_image'], inputs['r_image']], dim=1)
         for i in trange(batch_size):
             input_img_path = os.path.join(self.vis_dir, '%03d_in.png' % i)
             vis.visualize_data(
@@ -155,7 +170,14 @@ class Trainer(BaseTrainer):
         device = self.device
         p = data.get('points').to(device)
         occ = data.get('points.occ').to(device)
-        inputs = data.get('inputs', torch.empty(p.size(0), 0)).to(device)
+        inputs = data.get('inputs', torch.empty(p.size(0), 0))
+
+        # For stereo inputs
+        if type(inputs) == dict:
+            for k, v in inputs.items():
+                inputs[k] = v.to(device)
+        else:
+            inputs = inputs.to(device)
 
         #TODO: REMOVE
         # print('Dtype: ', inputs.dtype)

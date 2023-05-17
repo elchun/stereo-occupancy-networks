@@ -21,7 +21,7 @@ from im2mesh.utils import ndf_util
 
 class Shapes3dMonoDataset(data.Dataset):
     """
-    Shapenet mugs, bowl, bottles
+    Shapenet mugs, bowl, bottles in monocular
     """
     def __init__(self, dataset_folder: str, split: str, categories: list, points_subsample: int):
         """
@@ -156,10 +156,9 @@ class Shapes3dMonoDataset(data.Dataset):
         return data
 
 
-
 class Shapes3dStereoDataset(data.Dataset):
     """
-    Shapenet mugs, bowl, bottles
+    Shapenet mugs, bowl, bottles in stereo
     """
     def __init__(self, dataset_folder: str, split: str, categories: list, points_subsample: int):
         """
@@ -257,25 +256,25 @@ class Shapes3dStereoDataset(data.Dataset):
             return self.__getitem__(idx + 1)
 
         # TODO: Remove once reshaping is done
-        if l_image.shape[0] != 3:
-            l_image = np.einsum('ijk->kij', l_image)
-        if r_image.shape[0] != 3:
-            r_image = np.einsum('ijk->kij', r_image)
+        # if l_image.shape[0] != 3:
+        #     l_image = np.einsum('ijk->kij', l_image)
+        # if r_image.shape[0] != 3:
+        #     r_image = np.einsum('ijk->kij', r_image)
 
         # TODO: Remove once reprocessing is done
-        l_image = l_image.astype(np.float32)
-        r_image = r_image.astype(np.float32)
+        # l_image = l_image.astype(np.float32)
+        # r_image = r_image.astype(np.float32)
 
         # TODO: Remove
-        if np.max(l_image) > 1:
-            l_image = l_image / 255
-        if np.max(r_image) > 1:
-            r_image = r_image / 255
+        # if np.max(l_image) > 1:
+        #     l_image = l_image / 255
+        # if np.max(r_image) > 1:
+        #     r_image = r_image / 255
 
-        coord = coord.astype(np.float32)
-        occ_logits = occ_logits.astype(np.float32)
+        # coord = coord.astype(np.float32)
+        # occ_logits = occ_logits.astype(np.float32)
 
-        pose = pose.astype(np.float32)
+        # pose = pose.astype(np.float32)
 
         # Assume pose is a 4x4 homogeneous transform matrix
         coord_transformed = coord @ pose[:3, :3].T + pose[:3, 3]
@@ -284,7 +283,11 @@ class Shapes3dStereoDataset(data.Dataset):
         # print('voxel shape: ', occ_logits.shape)
 
         # Concatenate left and right images (easier to package with existing code)
-        inputs = np.concatenate([l_image, r_image], axis=0)
+        # inputs = np.concatenate([l_image, r_image], axis=0)
+        inputs = {
+            'l_image': l_image,
+            'r_image': r_image,
+        }
 
         data = {
             'points': coord_transformed,

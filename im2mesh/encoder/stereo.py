@@ -520,9 +520,10 @@ class TruncatedHdrnStereoEncoder(nn.Module):
 
     # def forward(self, left_image, right_image):
     def forward(self, x):
-        # TODO: Fix
-        left_image = x[:, :3, :, :]
-        right_image = x[:, 3:, :, :]
+        left_image = x['l_image']
+        right_image = x['r_image']
+        # left_image = x[:, :3, :, :]
+        # right_image = x[:, 3:, :, :]
 
         # print('l image shape: ', left_image.shape)
         # print('r image shape: ', right_image.shape)
